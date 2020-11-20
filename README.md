@@ -1,5 +1,9 @@
 # CppND-System-Monitor
 
+The completion of this project requires the implementation of functionalities present in, but not exclusive to, the `linux_parser.cpp` file.
+
+Further information on the implementation is present in the `README.md` file in the `/src/` directory.
+
 Starter code for System Monitor Project in the Object Oriented Programming Course of the [Udacity C++ Nanodegree Program](https://www.udacity.com/course/c-plus-plus-nanodegree--nd213). 
 
 Follow along with the classroom lesson to complete the project!
