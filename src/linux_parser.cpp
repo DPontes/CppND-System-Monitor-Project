@@ -1,5 +1,4 @@
 #include "linux_parser.h"
-
 #include <dirent.h>
 #include <unistd.h>
 
@@ -87,8 +86,22 @@ float LinuxParser::MemoryUtilization() {
   return (total_mem - free_mem) / total_mem;
 }
 
-// TODO: Read and return the system uptime
-long LinuxParser::UpTime() { return 0; }
+long LinuxParser::UpTime() {
+  string line;
+  string timeSystemString  = "";
+  string timeIdleProcString;
+  long timeSystem;
+
+  std::ifstream filestream(kProcDirectory + kUptimeFilename);
+  if (filestream.is_open()) {
+    while (std::getline(filestream, line)) {
+      std::istringstream linestream(line);
+      linestream >> timeSystemString >> timeIdleProcString;
+    }
+  }
+  timeSystem = std::stol(timeSystemString);
+  return timeSystem;
+}
 
 // TODO: Read and return the number of jiffies for the system
 long LinuxParser::Jiffies() { return 0; }
