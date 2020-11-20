@@ -1,6 +1,3 @@
-monitor
-a.out
-settings.json
-*.o
-build/*
-*.json
+build
+*swp
+.gitignore
