@@ -4,10 +4,11 @@ The base code in the [repo](https://github.com/udacity/CppND-System-Monitor-Proj
 
 ## Memory Utilization
 
-### Result:
+### Result
+
 A value [0-100] is presented in the Memory field, as well as a "load bar". The implementation for both of these items was already in place.
 
-### Implementation:
+### Implementation
 
 - `src/linux_parser.cpp`: `LinuxParser::MemoryUtilization()`
 
@@ -19,10 +20,11 @@ Function calls the `MemoryUtilization()` function from the `LinuxParser` namespa
 
 ## Kernel and OS
 
-### Result:
+### Result
+
 Text with the OS name as well as the kernel version are visible at the top of the tool
 
-### Implementation:
+### Implementation
 
 - `src/linux_parser.cpp`: `LinuxParser::Kernel()`
 
@@ -38,7 +40,8 @@ Simple call of the correct functions
 
 ## Total and Running Processes
 
-### Result:
+### Result
+
 A value of the number of total and running processes is present in the `Total Processes` and `Running Processes` field in the monitor tool, respectively.
 
 ### Implementation
@@ -53,7 +56,7 @@ Simple call of the correct functions
 
 ## System UpTime
 
-### Result:
+### Result
 
 The field for system `Up Time` contains the time that the system has been up in the HH:MM:SS format.
 
@@ -83,4 +86,41 @@ The function in the `Format` namespace takes in the `long int` returned by the `
 
 The function builds a string `time` that takes the values calculates above and turns them to strings (`to_string`) before concatenating them into the desired format
 
+## CPU Utilization
+
+### Result
+
+The field for `CPU` in the monitor tool will show a percentage of current CPU utilization, together with a visual percentage bar.
+
+### Implementation
+
+This implementation was based on how to calculate CPU utilization in this [link](https://stackoverflow.com/questions/23367857/accurate-calculation-of-cpu-usage-given-in-percentage-in-linux). The solution proposed in ithas been split into several of the functions described below.
+
+- `src/linux_parser.cpp`: `LinuxParser::CpuUtilization()`
+
+Implemented in a similar way as the previous functions to fetch information from a specific file; in this case, `/proc/stat`.
+
+The required information from this file occurs on the first line, therefore there is no need to use a `while-loop` to go through all the lines, contrary to other functions in this project.
+
+This line "aggregates the numbers in all the other cpuN lines. These numbers identify the amount of time the CPU has spent performing different kinds of work. Time units are in USER_HZ (typically hundredths of a second)".([chapter 1.8 of The /proc filesystem](https://github.com/torvalds/linux/blob/master/Documentation/filesystems/proc.rst)).
+
+This function will return a vector of strings correspoding to the values of each and every one of the numbers in the line. The function is called by the following two functions.
+
+- `src/linux_parser.cpp`: `LinuxParser::ActiveJiffies()`
+
+Returns the sum of the "Jiffies" that represent time when the CPUs were doing something.
+
+- `src/linux_parser.cpp`: `LinuxParser::IdleJiffies()`
+
+Returns the sum of the "Jiffies" that represent time when the CPUs were idle.
+
+- `src/linux_parser.cpp`: `LinuxParser::Jiffies()`
+
+Returns the sum of both of the two previous functions.
+
+- `src/processor.cpp`: `Processor::Utilization()`
+
+*NOTE:* Given that the values in `/proc/stat` are from when the system started, the output of this function will be rather static if the system has been up for some time. This could be improved by calculating the delta of the cpu usage between `t` and `t - 1`.
+
+This merely returns the fraction of `ActiveJiffies` over total `Jiffies`. As mentioned, it can be improved.
 

@@ -1,7 +1,9 @@
 #include "linux_parser.h"
+
 #include <dirent.h>
 #include <unistd.h>
 
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -88,7 +90,7 @@ float LinuxParser::MemoryUtilization() {
 
 long LinuxParser::UpTime() {
   string line;
-  string timeSystemString  = "";
+  string timeSystemString = "";
   string timeIdleProcString;
   long timeSystem;
 
@@ -103,23 +105,44 @@ long LinuxParser::UpTime() {
   return timeSystem;
 }
 
-// TODO: Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { return 0; }
+long LinuxParser::Jiffies() {
+  return LinuxParser::ActiveJiffies() + LinuxParser::IdleJiffies();
+}
 
 // TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::ActiveJiffies(int pid [[maybe_unused]]) { return 0; }
 
-// TODO: Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { return 0; }
+long LinuxParser::ActiveJiffies() {
+  static vector<string> CpuUtil = LinuxParser::CpuUtilization();
 
-// TODO: Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() { return 0; }
+  return (stof(CpuUtil[kUser_]) + stof(CpuUtil[kNice_]) +
+          stof(CpuUtil[kSystem_]) + stof(CpuUtil[kIRQ_]) +
+          stof(CpuUtil[kSoftIRQ_]) + stof(CpuUtil[kSteal_]));
+}
 
-// TODO: Read and return CPU utilization
-vector<string> LinuxParser::CpuUtilization() { return {}; }
+long LinuxParser::IdleJiffies() {
+  static vector<string> CpuUtil = LinuxParser::CpuUtilization();
 
-// TODO: Read and return the total number of processes
+  return (stof(CpuUtil[kIdle_]) + stof(CpuUtil[kIOwait_]));
+}
+
+vector<string> LinuxParser::CpuUtilization() {
+  vector<string> cpuData;
+  string line, key, value;
+
+  std::ifstream filestream(kProcDirectory + kStatFilename);
+  if (filestream.is_open()) {
+    std::getline(filestream, line);
+    std::istringstream linestream(line);
+    linestream >> key;
+    if (key == "cpu") {
+      while (linestream >> value) cpuData.push_back(value);
+    }
+  }
+  return cpuData;
+}
+
 int LinuxParser::TotalProcesses() {
   string line, key;
   int value{0};
