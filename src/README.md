@@ -84,7 +84,10 @@ The function in the `Format` namespace takes in the `long int` returned by the `
   2. obtain the rest value `%` from dividing for 3600 to get the number of seconds that do not fit in a whole hour; divide then by 60 to obtain the number of minutes,
   3. same reasoning, but this time instead of dividing the rest by 60, we do the rest by 60 again, to get the remaining seconds
 
-The function builds a string `time` that takes the values calculates above and turns them to strings (`to_string`) before concatenating them into the desired format
+The function builds a ostringstream `time` that takes the values calculated above and turns them to strings with a set width of 2 (`std:setw(2)`) and filled with `0`s (`std::setfill('0')`).
+
+The return operation chanegs the operation from a `ostringstream` to a `string`.
+
 
 ## CPU Utilization
 
