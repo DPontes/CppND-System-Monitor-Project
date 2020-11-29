@@ -17,6 +17,7 @@ class Process {
  private:
   int pid_;
   std::string cmd_;
+  std::string ram_;
 };
 
 #endif

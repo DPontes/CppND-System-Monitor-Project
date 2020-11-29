@@ -152,6 +152,16 @@ Returns a reference to a vector of type `Processes`. It fills this vector by goi
 
 With each initialization of this object by the loop mentioned above, it will initiate private variables `pid_`, `cmd_`, etc. The initialization of most of these will be done through the call if the corresponding `LinuxParser::` function. The value is later returned by the `Process::[function]` functions when called by the application that runs the data output.
 
+#### Command
+
 - `src/linux_parser.cpp`: `LinuxParser::Command(int pid)`
 
 In a similar way as done in previous functions in the `LinuxParser` area, it fetches the necessary information by opening the `/proc/[pid]/cmdline` file and attributing to the `cmd` variable the information inserted in the first item of the first line.
+
+#### RAM
+
+- `src/linux_parser.cpp`: `LinuxParser::Ram(int pid)`
+
+Searches for the key `VmSize:` in `/proc/[pid]/status`(*NOTE*: not `/proc/[pid]/stat` - lost a lot of time on this one) and returns a string of the value found in MB, by dividing the `ram_value` which is represented in `kB` by 1000.
+
+#### User
