@@ -14,7 +14,8 @@ using std::vector;
 
 Process::Process (int pid) : pid_(pid),
                              cmd_(LinuxParser::Command(pid)),
-                             ram_(LinuxParser::Ram(pid)) {}
+                             ram_(LinuxParser::Ram(pid)),
+                             user_(LinuxParser::User(pid)) {}
 
 
 int Process::Pid() { return pid_; }
@@ -28,7 +29,7 @@ string Process::Command() { return cmd_; }
 string Process::Ram() { return ram_; }
 
 // TODO: Return the user (name) that generated this process
-string Process::User() { return string(); }
+string Process::User() { return user_; }
 
 // TODO: Return the age of this process (in seconds)
 long int Process::UpTime() { return 0; }

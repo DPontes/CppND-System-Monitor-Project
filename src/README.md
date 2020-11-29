@@ -165,3 +165,16 @@ In a similar way as done in previous functions in the `LinuxParser` area, it fet
 Searches for the key `VmSize:` in `/proc/[pid]/status`(*NOTE*: not `/proc/[pid]/stat` - lost a lot of time on this one) and returns a string of the value found in MB, by dividing the `ram_value` which is represented in `kB` by 1000.
 
 #### User
+
+Obtaining the user per process is done in two parts: find the Uid of the process, and find the User corresponding to that Uid.
+
+- `src/linux_parser.cpp`: `LinuxParser::Uid(int pid)`
+
+Similar behaviour as previous functions: goes through the `/proc/[pid]/status` line by line searching for the `Uid:` key; when it finds it, returns the `uid_value`, used in the function below.
+
+- `src/linux_parser.cpp`: `LinuxParser::User(int pid)`
+
+Uses the `uid_value` obtained in the previous function as key to go through the `/etc/passwd` file in search of the user with the corresponding `uid`.
+
+The format of this file `[user]:x:[uid]:[uid]...` requires the translation of `':'` to `' '` in order for the same process as the previous functions to be used. The functionality `std::replace(...)` is used, just like in the `LinuxParser::OperatingSystem()` function.
+

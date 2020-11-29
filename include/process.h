@@ -18,6 +18,7 @@ class Process {
   int pid_;
   std::string cmd_;
   std::string ram_;
+  std::string user_;
 };
 
 #endif
