@@ -86,8 +86,9 @@ The function in the `Format` namespace takes in the `long int` returned by the `
 
 The function builds a ostringstream `time` that takes the values calculated above and turns them to strings with a set width of 2 (`std:setw(2)`) and filled with `0`s (`std::setfill('0')`).
 
-The return operation chanegs the operation from a `ostringstream` to a `string`.
+The return operation changes the operation from a `ostringstream` to a `string`.
 
+(Implementation of permanent double digits in the format of the time written by Satyajeet S. [here](https://knowledge.udacity.com/questions/155686)).
 
 ## CPU Utilization
 
