@@ -128,3 +128,30 @@ Returns the sum of both of the two previous functions.
 
 This merely returns the fraction of `ActiveJiffies` over total `Jiffies`. As mentioned, it can be improved.
 
+## Processes
+
+### Result
+
+A list of 10 processes is showed in the bottom part of the display, incluiding the information about each process `PID`, `User`, `CPU %`, `RAM [MB]`, `UpTime` and `Command`.
+
+### Implementation
+
+The information displayed in each field for each process was obtained in a similar way as the information of the system. The difference being that each process has a `/proc/[pid]/[file]` which will contain the necessary information that we are looking for.
+
+#### PID
+
+- `src/linux_parser.cpp`: `LinuxParser::Pids()`
+
+This function was already suplied in the base code; it goes through the list of subdirectories in the `/proc` directory whose names are `int` numbers. It supplies a vector of processes later used by the `System::Processes()` function.
+
+- `src/system.cpp`: `System::Processes()`
+
+Returns a reference to a vector of type `Processes`. It fills this vector by going through the vector returned by `LinuxParser::Pids()`, creates a process of type `Process` with the `pid` of said process, and "pushing back" each process to the end of the vector to be returned. It also clears the private `processes_` vector, otherwise it would result in an error.
+
+- `src/process.cpp`: `Process::Process(int pid)`
+
+With each initialization of this object by the loop mentioned above, it will initiate private variables `pid_`, `cmd_`, etc. The initialization of most of these will be done through the call if the corresponding `LinuxParser::` function. The value is later returned by the `Process::[function]` functions when called by the application that runs the data output.
+
+- `src/linux_parser.cpp`: `LinuxParser::Command(int pid)`
+
+In a similar way as done in previous functions in the `LinuxParser` area, it fetches the necessary information by opening the `/proc/[pid]/cmdline` file and attributing to the `cmd` variable the information inserted in the first item of the first line.
