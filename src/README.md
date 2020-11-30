@@ -182,8 +182,28 @@ The format of this file `[user]:x:[uid]:[uid]...` requires the translation of `'
 
 The UpTime for each process can be found in the `/proc/{pid]/stat` file, in the 22nd value, corresponding to the `starttime` value, according to the `proc`[man page](http://man7.org/linux/man-pages/man5/proc.5.html). The `starttime` is the time the process started after system boot, represented in "clock ticks".
 
-- `src/linux_parser.cpp`: `LinuxParser::UpTime(pid)`
+- `src/linux_parser.cpp`: `LinuxParser::UpTime(int pid)`
 
 The relevant value is fetched from the 22nd location in the first line, therefore a for-loop is used to place the value obtained in the `linestream` in the `up_time` variable over and over until the 22nd place is reached. This value is then turned to a `long int`, divided by `_SC_CLK_TCK` to turn into seconds.
 
 The actual up-time of the process is obtained by subtracting the calculated value above from the system up-time, obtained by calling `LinuxParser::UpTime` (this last solution obtained from a Knowledge post from [here](https://knowledge.udacity.com/questions/155622)).
+
+#### CPU Utilization
+
+Following the tips from this [page](https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599)
+
+- `src/linux_parser.cpp`: `LinuxParser::ActiveJiffies(int pid)`
+
+The values of `uTime`, `sTime`, `csTime` and `cuTime` are fetched using a `static vector<string>` to hold the values from the first line in the file. The required values are turned to `long` and the sum is returned to be used in the next function as `total_time`.
+
+- `src/process.cpp`: `Process::CpuUtilization()`
+
+Here the formula suggested in the link above is applied: `cpu_usage = 100 * ( (total_time / Hertz) / seconds)`, where:
+
+  `total_time`: value returned by `LinuxParser::ActiveJiffies(int pid)`
+  
+  `Hertz`: number of clock ticks per second (`sysconf(_SC_CLK_TCK)`)
+  
+  `seconds`: age of the process ( previously calculated in `LinuxParser::UpTime(int pid)`)
+
+`static_cast<float>` was required to cast the resulting value as a `float`.

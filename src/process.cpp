@@ -21,8 +21,10 @@ Process::Process (int pid) : pid_(pid),
 
 int Process::Pid() { return pid_; }
 
-// TODO: Return this process's CPU utilization
-float Process::CpuUtilization() { return 0; }
+float Process::CpuUtilization() {
+  return static_cast<float>(LinuxParser::ActiveJiffies(pid_) * 100) /
+                            sysconf(_SC_CLK_TCK) / LinuxParser::UpTime(pid_);
+}
 
 string Process::Command() { return cmd_; }
 
