@@ -178,3 +178,12 @@ Uses the `uid_value` obtained in the previous function as key to go through the 
 
 The format of this file `[user]:x:[uid]:[uid]...` requires the translation of `':'` to `' '` in order for the same process as the previous functions to be used. The functionality `std::replace(...)` is used, just like in the `LinuxParser::OperatingSystem()` function.
 
+#### UpTime
+
+The UpTime for each process can be found in the `/proc/{pid]/stat` file, in the 22nd value, corresponding to the `starttime` value, according to the `proc`[man page](http://man7.org/linux/man-pages/man5/proc.5.html). The `starttime` is the time the process started after system boot, represented in "clock ticks".
+
+- `src/linux_parser.cpp`: `LinuxParser::UpTime(pid)`
+
+The relevant value is fetched from the 22nd location in the first line, therefore a for-loop is used to place the value obtained in the `linestream` in the `up_time` variable over and over until the 22nd place is reached. This value is then turned to a `long int`, divided by `_SC_CLK_TCK` to turn into seconds.
+
+The actual up-time of the process is obtained by subtracting the calculated value above from the system up-time, obtained by calling `LinuxParser::UpTime` (this last solution obtained from a Knowledge post from [here](https://knowledge.udacity.com/questions/155622)).

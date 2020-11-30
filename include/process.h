@@ -19,6 +19,7 @@ class Process {
   std::string cmd_;
   std::string ram_;
   std::string user_;
+  long int uptime_;
 };
 
 #endif
