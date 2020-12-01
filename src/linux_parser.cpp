@@ -12,6 +12,25 @@ using std::string;
 using std::to_string;
 using std::vector;
 
+template <typename T>
+T findValueByKey(std::string const &keyFilter, std::string const &filename) {
+  std::string line, key;
+  T value;
+
+  std::ifstream stream(LinuxParser::kProcDirectory + filename);
+  if (stream.is_open()) {
+    while(std::getline(stream, line)) {
+      std::istringstream linestream(line);
+      while (linestream >> key >> value) {
+        if(key == keyFilter) {
+          return value;
+        }
+      }
+    }
+  }
+  return value;
+}
+
 string LinuxParser::OperatingSystem() {
   string line;
   string key;
@@ -67,26 +86,34 @@ vector<int> LinuxParser::Pids() {
 }
 
 float LinuxParser::MemoryUtilization() {
-  string line;
-  string key;
-  double value;
-  double total_mem{0};
-  double free_mem{0};
-  std::ifstream filestream(kProcDirectory + kMeminfoFilename);
-  if (filestream.is_open()) {
-    while (std::getline(filestream, line)) {
-      std::istringstream linestream(line);
-      while (linestream >> key >> value) {
-        if (key == "MemTotal:") {
-          total_mem = value;
-        } else if (key == "MemFree:") {
-          free_mem = value;
-        }
-      }
-    }
-  }
-  return (total_mem - free_mem) / total_mem;
+  string memTotal = "MemTotal:";
+  string memFree = "MemFree:";
+  float Total = findValueByKey<float>(memTotal, kMeminfoFilename);
+  float Free  = findValueByKey<float>(memFree, kMeminfoFilename);
+  return (Total - Free) / Total;
 }
+
+//float LinuxParser::MemoryUtilization() {
+//  string line;
+//  string key;
+//  double value;
+//  double total_mem{0};
+//  double free_mem{0};
+//  std::ifstream filestream(kProcDirectory + kMeminfoFilename);
+//  if (filestream.is_open()) {
+//    while (std::getline(filestream, line)) {
+//      std::istringstream linestream(line);
+//      while (linestream >> key >> value) {
+//        if (key == "MemTotal:") {
+//          total_mem = value;
+//        } else if (key == "MemFree:") {
+//          free_mem = value;
+//        }
+//      }
+//    }
+//  }
+//  return (total_mem - free_mem) / total_mem;
+//}
 
 long LinuxParser::UpTime() {
   string line;
