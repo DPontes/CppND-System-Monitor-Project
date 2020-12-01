@@ -12,9 +12,12 @@ using std::string;
 using std::to_string;
 using std::vector;
 
+/*
+    Generic Functions to use when searching for information in files
+*/
 template <typename T>
 T findValueByKey(std::string const &keyFilter, std::string const &filename) {
-  std::string line, key;
+  string line, key;
   T value;
 
   std::ifstream stream(LinuxParser::kProcDirectory + filename);
@@ -30,6 +33,24 @@ T findValueByKey(std::string const &keyFilter, std::string const &filename) {
   }
   return value;
 }
+
+template <typename T>
+T getValueOfFile(std::string const &filename) {
+  string line;
+  T value;
+
+  std::ifstream stream(LinuxParser::kProcDirectory + filename);
+  if (stream.is_open()) {
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    linestream >> value;
+  }
+  return value;
+}
+
+/*
+  -------------End-------------------
+*/
 
 string LinuxParser::OperatingSystem() {
   string line;
@@ -92,28 +113,6 @@ float LinuxParser::MemoryUtilization() {
   float Free  = findValueByKey<float>(memFree, kMeminfoFilename);
   return (Total - Free) / Total;
 }
-
-//float LinuxParser::MemoryUtilization() {
-//  string line;
-//  string key;
-//  double value;
-//  double total_mem{0};
-//  double free_mem{0};
-//  std::ifstream filestream(kProcDirectory + kMeminfoFilename);
-//  if (filestream.is_open()) {
-//    while (std::getline(filestream, line)) {
-//      std::istringstream linestream(line);
-//      while (linestream >> key >> value) {
-//        if (key == "MemTotal:") {
-//          total_mem = value;
-//        } else if (key == "MemFree:") {
-//          free_mem = value;
-//        }
-//      }
-//    }
-//  }
-//  return (total_mem - free_mem) / total_mem;
-//}
 
 long LinuxParser::UpTime() {
   string line;
@@ -186,51 +185,26 @@ vector<string> LinuxParser::CpuUtilization() {
 }
 
 int LinuxParser::TotalProcesses() {
-  string line, key;
-  int value{0};
-  std::ifstream filestream(kProcDirectory + kStatFilename);
-  if (filestream.is_open()) {
-    while (std::getline(filestream, line)) {
-      std::istringstream linestream(line);
-      while (linestream >> key >> value) {
-        if (key == "processes") {
-          return value;
-        }
-      }
-    }
-  }
-  return value;
+  string procsTotal = "processes";
+
+  return findValueByKey<int>(procsTotal, kStatFilename);
 }
 
 int LinuxParser::RunningProcesses() {
-  string line, key;
-  int value{0};
-  std::ifstream filestream(kProcDirectory + kStatFilename);
-  if (filestream.is_open()) {
-    while (std::getline(filestream, line)) {
-      std::istringstream linestream(line);
-      while (linestream >> key >> value) {
-        if (key == "procs_running") {
-          return value;
-        }
-      }
-    }
-  }
-  return value;
+  string procsRunning = "procs_running";
+
+  return findValueByKey<int>(procsRunning, kStatFilename);
 }
 
 string LinuxParser::Command(int pid) {
-  string line, cmd;
-
-  std::ifstream filestream(kProcDirectory + to_string(pid) + kCmdlineFilename);
-  if (filestream.is_open()) {
-    std::getline(filestream, line);
-    std::istringstream linestream(line);
-    linestream >> cmd;
-  }
-  return cmd;
+  return string(getValueOfFile<string>(to_string(pid) + kCmdlineFilename));
 }
 
+/*
+  NOTE: using VmData instead of VmSize as indicated in the Guidelines on purpose
+  Reason: VmSize sum of all virtual memory
+          VmData exact physical memory being used as part of physical RAM
+*/
 string LinuxParser::Ram(int pid) {
   string line, key;
   int ram_value;
@@ -240,7 +214,7 @@ string LinuxParser::Ram(int pid) {
       std::istringstream linestream(line);
       while (linestream >> key >> ram_value) {
         if (key == "VmSize:") {
-          return to_string(ram_value / 1000);
+          return to_string(ram_value / 1024);
         }
       }
     }
