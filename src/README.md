@@ -198,12 +198,14 @@ The values of `uTime`, `sTime`, `csTime` and `cuTime` are fetched using a `stati
 
 - `src/process.cpp`: `Process::CpuUtilization()`
 
-Here the formula suggested in the link above is applied: `cpu_usage = 100 * ( (total_time / Hertz) / seconds)`, where:
+Here the formula suggested in the link above is (partially) applied: `cpu_usage = ( (total_time / Hertz) / seconds)`, where:
 
   `total_time`: value returned by `LinuxParser::ActiveJiffies(int pid)`
   
   `Hertz`: number of clock ticks per second (`sysconf(_SC_CLK_TCK)`)
   
   `seconds`: age of the process ( previously calculated in `LinuxParser::UpTime(int pid)`)
+
+*NOTE*: the multiplication by 100 is already done in the `src/ncurses_display.cpp` file when calling `processes.CpuUtilization(pid)`
 
 `static_cast<float>` was required to cast the resulting value as a `float`.
