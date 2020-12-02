@@ -15,6 +15,26 @@ using std::vector;
 /*
     Generic Functions to use when searching for information in files
 */
+
+template <typename T>
+T findValueByKey(std::string const &keyFilter, std::string const &filename, int pid) {
+  string line, key;
+  T value;
+
+  std::ifstream stream(LinuxParser::kProcDirectory + std::to_string(pid) + filename);
+  if (stream.is_open()) {
+    while(std::getline(stream, line)) {
+      std::istringstream linestream(line);
+      while (linestream >> key >> value) {
+        if(key == keyFilter) {
+          return value;
+        }
+      }
+    }
+  }
+  return value;
+}
+
 template <typename T>
 T findValueByKey(std::string const &keyFilter, std::string const &filename) {
   string line, key;
@@ -206,36 +226,17 @@ string LinuxParser::Command(int pid) {
           VmData exact physical memory being used as part of physical RAM
 */
 string LinuxParser::Ram(int pid) {
-  string line, key;
-  int ram_value;
-  std::ifstream filestream(kProcDirectory + to_string(pid) + kStatusFilename);
-  if (filestream.is_open()) {
-    while (std::getline(filestream, line)) {
-      std::istringstream linestream(line);
-      while (linestream >> key >> ram_value) {
-        if (key == "VmSize:") {
-          return to_string(ram_value / 1024);
-        }
-      }
-    }
-  }
-  return to_string(ram_value);
+  string ramData = "VmData";
+
+  long ram = findValueByKey<long>(ramData, kStatusFilename, pid);
+  ram = ram / 1024;
+  return to_string(ram);
 }
 
 string LinuxParser::Uid(int pid) {
-  string line, key, uid_value;
-  std::ifstream filestream(kProcDirectory + to_string(pid) + kStatusFilename);
-  if (filestream.is_open()) {
-    while (std::getline(filestream, line)) {
-      std::istringstream linestream(line);
-      while (linestream >> key >> uid_value) {
-        if (key == "Uid:") {
-          return uid_value;
-        }
-      }
-    }
-  }
-  return uid_value;
+  string uidValue = "Uid:";
+
+  return findValueByKey<string>(uidValue, kStatusFilename, pid);
 }
 
 string LinuxParser::User(int pid) {
