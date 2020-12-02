@@ -146,7 +146,7 @@ This function was already suplied in the base code; it goes through the list of 
 
 - `src/system.cpp`: `System::Processes()`
 
-Returns a reference to a vector of type `Processes`. It fills this vector by going through the vector returned by `LinuxParser::Pids()`, creates a process of type `Process` with the `pid` of said process, and "pushing back" each process to the end of the vector to be returned. It also clears the private `processes_` vector, otherwise it would result in an error. The verification of `size(process.Command())` is to ignore "zombie processes" which are processes that have been terminated, but still remain because their parent has not destroyed them properly. This type of process has an empty `/proc/[pid]/cmdline` file, which is what is being checked in this command.
+Returns a reference to a vector of type `Processes`. It fills this vector by going through the vector returned by `LinuxParser::Pids()`, creates a process of type `Process` with the `pid` of said process, and "pushing back" each process to the end of the vector to be returned. It also clears the private `processes_` vector, otherwise it would result in an error. The verification of `(process.Command().size() > 0)` is to ignore "zombie processes" which are processes that have been terminated, but still remain because their parent has not destroyed them properly. This type of process has an empty `/proc/[pid]/cmdline` file, which is what is being checked in this command.
 
 - `src/process.cpp`: `Process::Process(int pid)`
 
