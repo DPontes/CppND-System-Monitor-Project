@@ -114,10 +114,12 @@ long LinuxParser::ActiveJiffies(int pid) {
   string line, value;
 
   std::ifstream filestream(kProcDirectory + to_string(pid) + kStatFilename);
-  if(filestream.is_open()) {
+  if (filestream.is_open()) {
     std::getline(filestream, line);
     std::istringstream linestream(line);
-    while(linestream >> value) { cpuTimes.push_back(value); }
+    while (linestream >> value) {
+      cpuTimes.push_back(value);
+    }
   }
 
   long uTime = std::stol(cpuTimes[13]);
@@ -265,7 +267,9 @@ long LinuxParser::UpTime(int pid) {
   if (filestream.is_open()) {
     std::getline(filestream, line);
     std::istringstream linestream(line);
-    for (int steps = 0; steps < 22; steps++) { linestream >> up_time; }
+    for (int steps = 0; steps < 22; steps++) {
+      linestream >> up_time;
+    }
     return LinuxParser::UpTime() - std::stol(up_time) / sysconf(_SC_CLK_TCK);
   }
 

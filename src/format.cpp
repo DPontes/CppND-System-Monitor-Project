@@ -1,11 +1,11 @@
 #include "format.h"
 
-#include <string>
 #include <iomanip>
+#include <string>
 
-using std::string;
 using std::setfill;
 using std::setw;
+using std::string;
 
 // OUTPUT: HH:MM:SS
 string Format::ElapsedTime(long seconds) {
@@ -17,7 +17,7 @@ string Format::ElapsedTime(long seconds) {
   minutes = (seconds % 3600) / 60;
   seconds = (seconds % 3600) % 60;
 
-  time << std::setw(2) << std::setfill('0') << hours   << ":"
+  time << std::setw(2) << std::setfill('0') << hours << ":"
        << std::setw(2) << std::setfill('0') << minutes << ":"
        << std::setw(2) << std::setfill('0') << seconds;
 

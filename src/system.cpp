@@ -20,9 +20,11 @@ Processor& System::Cpu() { return cpu_; }
 
 vector<Process>& System::Processes() {
   processes_.clear();
-  for(auto pid : LinuxParser::Pids()) {
+  for (auto pid : LinuxParser::Pids()) {
     Process process(pid);
-    if(size(process.Command()) > 0) { processes_.push_back(process); }
+    if (size(process.Command()) > 0) {
+      processes_.push_back(process);
+    }
   }
   return processes_;
 }

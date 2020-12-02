@@ -5,7 +5,7 @@
 
 class Process {
  public:
-  Process (int pid);
+  Process(int pid);
   int Pid();
   std::string User();
   std::string Command();
