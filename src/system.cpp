@@ -22,7 +22,7 @@ vector<Process>& System::Processes() {
   processes_.clear();
   for (auto pid : LinuxParser::Pids()) {
     Process process(pid);
-    if (size(process.Command()) > 0) {
+    if (process.Command().size() > 0) {
       processes_.push_back(process);
     }
   }
