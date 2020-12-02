@@ -100,9 +100,10 @@ long LinuxParser::UpTime() {
       std::istringstream linestream(line);
       linestream >> timeSystemString >> timeIdleProcString;
     }
+    timeSystem = std::stol(timeSystemString);
+    return timeSystem;
   }
-  timeSystem = std::stol(timeSystemString);
-  return timeSystem;
+  return std::stol(timeSystemString);
 }
 
 long LinuxParser::Jiffies() {
