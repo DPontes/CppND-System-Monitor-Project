@@ -128,3 +128,84 @@ Returns the sum of both of the two previous functions.
 
 This merely returns the fraction of `ActiveJiffies` over total `Jiffies`. As mentioned, it can be improved.
 
+## Processes
+
+### Result
+
+A list of 10 processes is showed in the bottom part of the display, incluiding the information about each process `PID`, `User`, `CPU %`, `RAM [MB]`, `UpTime` and `Command`.
+
+### Implementation
+
+The information displayed in each field for each process was obtained in a similar way as the information of the system. The difference being that each process has a `/proc/[pid]/[file]` which will contain the necessary information that we are looking for.
+
+#### PID
+
+- `src/linux_parser.cpp`: `LinuxParser::Pids()`
+
+This function was already suplied in the base code; it goes through the list of subdirectories in the `/proc` directory whose names are `int` numbers. It supplies a vector of processes later used by the `System::Processes()` function.
+
+- `src/system.cpp`: `System::Processes()`
+
+Returns a reference to a vector of type `Processes`. It fills this vector by going through the vector returned by `LinuxParser::Pids()`, creates a process of type `Process` with the `pid` of said process, and "pushing back" each process to the end of the vector to be returned. It also clears the private `processes_` vector, otherwise it would result in an error. The verification of `(process.Command().size() > 0)` is to ignore "zombie processes" which are processes that have been terminated, but still remain because their parent has not destroyed them properly. This type of process has an empty `/proc/[pid]/cmdline` file, which is what is being checked in this command.
+
+- `src/process.cpp`: `Process::Process(int pid)`
+
+With each initialization of this object by the loop mentioned above, it will initiate private variables `pid_`, `cmd_`, etc. The initialization of most of these will be done through the call if the corresponding `LinuxParser::` function. The value is later returned by the `Process::[function]` functions when called by the application that runs the data output.
+
+#### Command
+
+- `src/linux_parser.cpp`: `LinuxParser::Command(int pid)`
+
+In a similar way as done in previous functions in the `LinuxParser` area, it fetches the necessary information by opening the `/proc/[pid]/cmdline` file and attributing to the `cmd` variable the information inserted in the first item of the first line.
+
+#### RAM
+
+- `src/linux_parser.cpp`: `LinuxParser::Ram(int pid)`
+
+Searches for the key `VmSize:` in `/proc/[pid]/status`(*NOTE*: not `/proc/[pid]/stat` - lost a lot of time on this one) and returns a string of the value found in MB, by dividing the `ram_value` which is represented in `kB` by 1000.
+
+#### User
+
+Obtaining the user per process is done in two parts: find the Uid of the process, and find the User corresponding to that Uid.
+
+- `src/linux_parser.cpp`: `LinuxParser::Uid(int pid)`
+
+Similar behaviour as previous functions: goes through the `/proc/[pid]/status` line by line searching for the `Uid:` key; when it finds it, returns the `uid_value`, used in the function below.
+
+- `src/linux_parser.cpp`: `LinuxParser::User(int pid)`
+
+Uses the `uid_value` obtained in the previous function as key to go through the `/etc/passwd` file in search of the user with the corresponding `uid`.
+
+The format of this file `[user]:x:[uid]:[uid]...` requires the translation of `':'` to `' '` in order for the same process as the previous functions to be used. The functionality `std::replace(...)` is used, just like in the `LinuxParser::OperatingSystem()` function.
+
+#### UpTime
+
+The UpTime for each process can be found in the `/proc/{pid]/stat` file, in the 22nd value, corresponding to the `starttime` value, according to the `proc`[man page](http://man7.org/linux/man-pages/man5/proc.5.html). The `starttime` is the time the process started after system boot, represented in "clock ticks".
+
+- `src/linux_parser.cpp`: `LinuxParser::UpTime(int pid)`
+
+The relevant value is fetched from the 22nd location in the first line, therefore a for-loop is used to place the value obtained in the `linestream` in the `up_time` variable over and over until the 22nd place is reached. This value is then turned to a `long int`, divided by `_SC_CLK_TCK` to turn into seconds.
+
+The actual up-time of the process is obtained by subtracting the calculated value above from the system up-time, obtained by calling `LinuxParser::UpTime` (this last solution obtained from a Knowledge post from [here](https://knowledge.udacity.com/questions/155622)).
+
+#### CPU Utilization
+
+Following the tips from this [page](https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599)
+
+- `src/linux_parser.cpp`: `LinuxParser::ActiveJiffies(int pid)`
+
+The values of `uTime`, `sTime`, `csTime` and `cuTime` are fetched using a `static vector<string>` to hold the values from the first line in the file. The required values are turned to `long` and the sum is returned to be used in the next function as `total_time`.
+
+- `src/process.cpp`: `Process::CpuUtilization()`
+
+Here the formula suggested in the link above is (partially) applied: `cpu_usage = ( (total_time / Hertz) / seconds)`, where:
+
+  `total_time`: value returned by `LinuxParser::ActiveJiffies(int pid)`
+  
+  `Hertz`: number of clock ticks per second (`sysconf(_SC_CLK_TCK)`)
+  
+  `seconds`: age of the process ( previously calculated in `LinuxParser::UpTime(int pid)`)
+
+*NOTE*: the multiplication by 100 is already done in the `src/ncurses_display.cpp` file when calling `processes.CpuUtilization(pid)`
+
+`static_cast<float>` was required to cast the resulting value as a `float`.
